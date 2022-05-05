@@ -38,12 +38,14 @@
           <img class="addProjectBtn" src="../src/icons/add.png" alt="add project icon">
         </div>
         <div class="projects">
-          <div class="addProjectField">
-            <input type="text" placeholder="enter project name">
+          <form id="addProjectForm" class="hidden" action="">
+            <input id="addProjectInput" type="text" placeholder="Enter new project name" minlength="4">
             <button class="submitNewProject">Submit</button>
             <button class="cancelNewProject">Cancel</button>
+          </form>
+          <div class="projectsList">
+            
           </div>
-          <div class="projectsList"></div>
         </div>
       </div>
     </div>

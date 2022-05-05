@@ -3,11 +3,12 @@
 :root {
   --mainColor: rgb(141, 4, 43);
   --grayColor: #ededed;
+  --mainFont: 'Inconsolata', monospace;
 }
 
 body {
   margin: 0;
-  font-family: 'Inconsolata', monospace;
+  font-family: var(--mainFont);
 }
 
 .container {
@@ -128,4 +129,98 @@ body {
 
 .projects {
   margin-left: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+#addProjectForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 30px 30px;
+  grid-template-areas: 
+    "input input"
+    "submit cancel";
+  margin-top: 5px;
+  gap: 5px;
+  z-index: 1;
+}
+
+#addProjectForm.hidden {
+  display: none;
+}
+
+#addProjectForm input {
+  grid-area: input;
+  line-height: 1.5rem;
+  border: 0;
+  border-radius: 5px;
+  text-indent: 10px;
+}
+
+#addProjectForm input:focus {
+  outline: none;
+}
+
+#addProjectForm input::placeholder {
+  font-family: var(--mainFont);
+}
+
+#addProjectForm button {
+  height: 30px;
+  border: 0;
+  color: white;
+  border-radius: 5px;
+  font-family: var(--mainFont);
+  font-size: 1rem;
+}
+
+#addProjectForm button:hover {
+  cursor: pointer;
+}
+
+#addProjectForm .submitNewProject {
+  grid-area: submit;
+  background-color: #9FC26E;
+}
+
+#addProjectForm .cancelNewProject {
+  grid-area: cancel;
+  background-color: var(--mainColor);
+}
+
+.projectsList * {
+  /* margin-left: 15px; */
+  padding: 5px;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.projectsList>*:hover {
+  background-color: rgb(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.projectItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.delBtn {
+  transition: 0.3s;
+  width: 16px !important;
+  display: none;
+  opacity: 0.5;
+}
+
+.delBtn:hover {
+  transform: scale(1.5);
+  transition: 0.3s;
+  opacity: 1;
+}
+
+.projectsList>*:hover .delBtn {
+  display: block;
 }
