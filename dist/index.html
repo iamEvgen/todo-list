@@ -1,12 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfect Todo list</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfect Todo list</title>
 </head>
 <body>
-    
+  <div class="container">
+    <div class="header">
+      <img class="menu" src="./360d0dcab772fd97d50f6beb177e2daa.png" alt="menu icon">
+      <img class="home" src="./72f54611fa979ffd23ecb62733959f73.png" alt="home icon">
+      <div class="title">Perfect ToDo List</div>
+
+    </div>
+    <div class="sidebar">
+      <div class="sidebarMenu">
+        <div class="nav">
+          <img src="../src/icons/alltasks.png" alt="alltasks icon">
+          <div>All tasks</div>
+        </div>
+        <div class="nav">
+          <img src="../src/icons/today.png" alt="alltasks icon">
+          <div>Today</div>
+        </div>
+        <div class="nav">
+          <img src="../src/icons/week.png" alt="alltasks icon">
+          <div>Week</div>
+        </div>
+        <div class="nav">
+          <img src="../src/icons/favourite.png" alt="alltasks icon">
+          <div>Favourites</div>
+        </div>
+        <div class="nav">
+          <img src="../src/icons/projects.png" alt="alltasks icon">
+          <div>Projects</div>
+          <img class="addProjectBtn" src="../src/icons/add.png" alt="add project icon">
+        </div>
+        <div class="projects">
+          <div class="addProjectField">
+            <input type="text" placeholder="enter project name">
+            <button class="submitNewProject">Submit</button>
+            <button class="cancelNewProject">Cancel</button>
+          </div>
+          <div class="projectsList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      
+    </div>
+    <div class="footer">
+      <div class="copyText">Crafted by iamEvgen in 2022</div>
+      <a href="https://github.com/iamEvgen" target="_blank">
+        <img src="./5de0643bf1bbf77878ff26e8d04f3042.png" alt="github logo">
+      </a>
+    </div>
+  </div>
+  <script src="./main.js"></script>
 </body>
 </html>
