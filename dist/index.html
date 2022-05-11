@@ -16,20 +16,20 @@
     </div>
     <div class="sidebar">
       <div class="sidebarMenu">
-        <div class="nav">
+        <div class="nav filter id-0">
           <img src="../src/icons/alltasks.png" alt="alltasks icon">
           <div>All tasks</div>
         </div>
-        <div class="nav">
+        <div class="nav filter id-1">
           <img src="../src/icons/today.png" alt="alltasks icon">
           <div>Today</div>
         </div>
-        <div class="nav">
+        <div class="nav filter id-2">
           <img src="../src/icons/week.png" alt="alltasks icon">
           <div>Week</div>
         </div>
-        <div class="nav">
-          <img src="../src/icons/favourite.png" alt="alltasks icon">
+        <div class="nav filter id-3">
+          <img src="../src/icons/important.png" alt="alltasks icon">
           <div>Favourites</div>
         </div>
         <div class="nav" id="projectsTag">
@@ -44,7 +44,7 @@
             <button class="cancelNewProject">Cancel</button>
           </form>
           <div class="projectsList">
-            
+            <div class="inbox">Inbox</div>
           </div>
         </div>
       </div>
@@ -53,6 +53,7 @@
       <div class="contentBox">
         <h1 id="title"></h1>
         <div id="toDoField"></div>
+        <button id="newToDo">+ ToDo</button>
       </div>
     </div>
     <div class="footer">
@@ -62,6 +63,34 @@
       </a>
     </div>
   </div>
+
+  <div class="popupFill hidePopup">
+    <form class="popup">
+      <h2>Add new ToDo:</h2>
+      <div class="popupContainer">
+        <div class="leftPart">
+          <label for="addToDoTitle">Title:</label>
+          <input id="addToDoTitle" type="text" maxlength="300" required>
+          <label for="description">Description:</label>
+          <textarea name="description" id="description" cols="30" rows="8"></textarea> 
+        </div>
+        <div class="rightPart">
+          <label for="dueDate">Due date:</label>
+          <input id="dueDate" type="date" required>
+          <label for="selectProject">Select project:</label>
+          <select name="selectProject" id="selectProject"></select>
+          <div class="isImportantBox">
+            <label for="isImportant">Add to favourites?</label>
+            <input type="checkbox" name="isImportant" id="isImportant" class="toDoCheckbox">
+          </div>
+          <button id="saveButton">Save</button>
+          <p>to close click outside the form</p>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
+
   <script src="./main.js"></script>
 </body>
 </html>

@@ -4,7 +4,9 @@ import './img/home.png';
 import './img/GitHub.png';
 import closeBtn from './icons/del.png';
 import starOn from './icons/starOn.png';
-import starOff from './icons/starOff.png'
+import starOff from './icons/starOff.png';
+import editToDoIcon from './icons/editToDo.png';
+import delToDoIcon from './icons/delToDo.png';
 
 
 class toDo {
@@ -13,8 +15,9 @@ class toDo {
     this.projectId = projectId;
     this.title = title,
     this.notes = notes,
-    this.dste = date,
-    this.important = important
+    this.date = date,
+    this.important = important,
+    this.ready = false
   }
 }
 
@@ -34,7 +37,11 @@ const projectsManager = (function() {
   const toDoList = [];
 
   function getActiveProjectId() {
-    return activeProjectId || 0;
+    return activeProjectId;
+  }
+
+  function setActiveProjectId(id) {
+    activeProjectId = +id;
   }
 
   function getActiveTitle() {
@@ -48,11 +55,25 @@ const projectsManager = (function() {
   }
 
   function deleteProject(projectId) {
+    let needToRenderToDos = false;
     projectList.forEach(function(item, index, object) {
       if (+projectId === item.projectId) {
         object.splice(index, 1);
+        if (item.projectId === projectsManager.getActiveProjectId()) {
+          projectsManager.setActiveProjectId(0);
+          needToRenderToDos = true;
+        }
       }
     })
+    return needToRenderToDos;
+  }
+
+  function getToDoNumberInList(id) {
+    let index = -1;
+    toDoList.forEach(function(toDo, i) {
+      if (toDo.toDoId === +id) index = i;
+    })
+    return index;
   }
 
   function createToDo(title, notes, date, important) {
@@ -69,12 +90,13 @@ const projectsManager = (function() {
     })
   }
 
+  createProject('Inbox');
   createProject('Project1');
   createProject('Project2');
   createToDo('Text of note 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2009', false);
   createToDo('Text of note 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2009', true);
 
-  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getActiveProjectId, getActiveTitle};
+  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getActiveProjectId, setActiveProjectId, getActiveTitle, getToDoNumberInList};
 
 })();
 
@@ -91,6 +113,9 @@ const domManipulation = (function() {
   const title = document.querySelector('#title');
   const toDoField = document.querySelector('#toDoField');
   let sidebarShow = true;
+  let filterMode = false;
+  const addToDoBtn = document.querySelector('#newToDo');
+  const popupFill = document.querySelector('.popupFill');
 
   function hideShowSidebar() {
     if (sidebarShow) {
@@ -125,26 +150,43 @@ const domManipulation = (function() {
 
   function delProject(event) {
     const id = event.path[1].classList[1].split('-')[1];
-    projectsManager.deleteProject(id);
+    const needToRenderToDos = projectsManager.deleteProject(id);
     renderProjects();
+    if (needToRenderToDos) renderToDos();
+  }
+
+  function resetActiveColor() {
+    const allProjects = document.querySelectorAll('.projectItem');
+    const allFilters = document.querySelectorAll('.filter');
+    allProjects.forEach(project => project.classList.remove('active'));
+    allFilters.forEach(filter => filter.classList.remove('active'));
   }
 
   function colorActiveProject(id) {
-    const allProjects = document.querySelectorAll('.projectItem');
-    if (allProjects.length > 0) {
-      allProjects.forEach(project => {
-        project.classList.remove('active');
-      })
-    }
-    
-    const activeProject = document.querySelector(`.projectItem.id-${id}`);
-    activeProject.classList.add('active');
+    if (id > -1) {
+      resetActiveColor();
+      const activeProject = document.querySelector(`.projectItem.id-${id}`);
+      activeProject.classList.add('active');
+    } 
+  }
+
+  function colorActiveFilter(id) {
+    resetActiveColor();
+    const activeFilter = document.querySelector(`.filter.id-${id}`);
+    activeFilter.classList.add('active');
   }
 
   function selectProject() {
     const id = this.classList[1].split('-')[1];
     colorActiveProject(id);
-    projectsManager.activeProjectId = id;
+    projectsManager.setActiveProjectId(id);
+    renderToDos();
+  }
+
+  function selectFilter() {
+    const id = this.classList[2].split('-')[1];
+    colorActiveFilter(id);
+    projectsManager.setActiveProjectId(-1);
     renderToDos();
   }
 
@@ -164,12 +206,14 @@ const domManipulation = (function() {
       newProject.classList.add(`id-${project.projectId}`);
       projectName.textContent = project.name;
       newProject.appendChild(projectName);
-
-      const delIcon = new Image();
-      delIcon.src = closeBtn;
-      delIcon.classList.add('delBtn');
-      newProject.appendChild(delIcon);
-
+      
+      if (project.projectId !== 0) {
+        const delIcon = new Image();
+        delIcon.src = closeBtn;
+        delIcon.classList.add('delBtn');
+        newProject.appendChild(delIcon);
+      }
+      
       projectsList.appendChild(newProject);
     })
 
@@ -183,7 +227,43 @@ const domManipulation = (function() {
       projectItem.addEventListener('click', selectProject);
     })
 
-    colorActiveProject(projectsManager.getActiveProjectId()); 
+    const activeProjectId = projectsManager.getActiveProjectId();
+    colorActiveProject(activeProjectId); 
+  }
+
+  const allFilters = document.querySelectorAll('.filter');
+  allFilters.forEach(filter => filter.addEventListener('click', selectFilter));
+
+  function showForm() {
+    popupFill.classList.remove('hidePopup');
+    popupFill.classList.add('showPopup');
+  }
+
+  function hideForm(event) {
+    if (event.target == popupFill) {
+      popupFill.classList.remove('showPopup');
+      popupFill.classList.add('hidePopup');
+    }
+  }
+
+  function changeImportant(event) {
+    const toDoId = +event.path[1].classList[1].split('-')[1];
+    const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
+    projectsManager.toDoList[toDoNumber].important = !projectsManager.toDoList[toDoNumber].important;
+    renderToDos();
+  }
+
+  function changeReady(event) {
+    const toDoId = +event.path[1].classList[1].split('-')[1];
+    const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
+    projectsManager.toDoList[toDoNumber].ready = !projectsManager.toDoList[toDoNumber].ready;
+    renderToDos();
+  }
+
+  function delToDo(event) {
+    const toDoId = +event.path[1].classList[1].split('-')[1];
+    projectsManager.deleteToDo(toDoId);
+    renderToDos();
   }
 
   function renderToDos(toDoList) {
@@ -195,15 +275,22 @@ const domManipulation = (function() {
     ActualToDoList.forEach(toDo => {
       const ToDoItem = document.createElement('div');
       ToDoItem.classList.add('ToDoItem');
+      ToDoItem.classList.add(`id-${toDo.toDoId}`);
 
       const checkBox = document.createElement('input');
       checkBox.type = "checkbox";
+      checkBox.classList.add('toDoCheckbox');
+      if (toDo.ready) {checkBox.checked = true};
+      checkBox.addEventListener('click', changeReady);
 
       const toDoTitle = document.createElement('div');
+      toDoTitle.classList.add('toDoTitle');
       toDoTitle.textContent = toDo.title;
+      if (toDo.ready) {toDoTitle.classList.add('done')};
 
       const toDoDate = document.createElement('div');
       toDoDate.textContent = toDo.date;
+      toDoDate.classList.add('toDoDate');
 
       const importantIcon = new Image();
       if (toDo.important) {
@@ -212,11 +299,23 @@ const domManipulation = (function() {
         importantIcon.src = starOff;
       }
       importantIcon.classList.add('importantIcon');
+      importantIcon.addEventListener('click', changeImportant);
+
+      const editToDoBtn = new Image();
+      editToDoBtn.src = editToDoIcon;
+      editToDoBtn.classList.add('editToDoBtn');
+
+      const delToDoBtn = new Image();
+      delToDoBtn.src = delToDoIcon;
+      delToDoBtn.classList.add('delToDoBtn');
+      delToDoBtn.addEventListener('click', delToDo, {once: true});
 
       ToDoItem.appendChild(checkBox);
       ToDoItem.appendChild(toDoTitle);
       ToDoItem.appendChild(toDoDate);
       ToDoItem.appendChild(importantIcon);
+      ToDoItem.appendChild(editToDoBtn);
+      ToDoItem.appendChild(delToDoBtn);
 
       toDoField.appendChild(ToDoItem);
     })
@@ -225,6 +324,8 @@ const domManipulation = (function() {
   addProjectForm.addEventListener('submit', addProject);
   menuBtn.addEventListener('click', hideShowSidebar);
   addProjectBtn.addEventListener('click', showAddProjectForm);
+  addToDoBtn.addEventListener('click', showForm);
+  popupFill.addEventListener('click', hideForm)
 
   renderProjects();
   renderToDos();
