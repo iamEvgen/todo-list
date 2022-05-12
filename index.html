@@ -39,7 +39,10 @@
         </div>
         <div class="projects">
           <form id="addProjectForm" class="hidden" action="">
-            <input id="addProjectInput" type="text" placeholder="Enter new project name" minlength="4">
+            <div>
+              <input id="addProjectInput" type="text" placeholder="Enter new project name" minlength="4">
+              <div class="warningUniqueName hideWarning">* need unique name</div>
+            </div>
             <button class="submitNewProject">Submit</button>
             <button class="cancelNewProject">Cancel</button>
           </form>
@@ -66,13 +69,13 @@
 
   <div class="popupFill hidePopup">
     <form class="popup">
-      <h2>Add new ToDo:</h2>
+      <h2></h2>
       <div class="popupContainer">
         <div class="leftPart">
           <label for="addToDoTitle">Title:</label>
           <input id="addToDoTitle" type="text" maxlength="300" required>
           <label for="description">Description:</label>
-          <textarea name="description" id="description" cols="30" rows="8"></textarea> 
+          <textarea name="description" id="description" cols="30" rows="5"></textarea> 
         </div>
         <div class="rightPart">
           <label for="dueDate">Due date:</label>
