@@ -5,6 +5,7 @@
   --grayColor: #ededed;
   --mainFont: 'Inconsolata', monospace;
   --lightGray: rgb(215, 215, 215);
+  --greenColor: #9FC26E;
 }
 
 body {
@@ -146,7 +147,7 @@ body {
 #addProjectForm {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 30px 30px;
+  grid-template-rows: 1fr 30px;
   grid-template-areas: 
     "input input"
     "submit cancel";
@@ -160,9 +161,16 @@ body {
   display: none;
 }
 
-#addProjectForm input {
+#addProjectForm div {
   grid-area: input;
-  line-height: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+#addProjectForm input {
+  width: auto;
+  line-height: 1.8rem;
+  font-size: 1rem;
   border: 0;
   border-radius: 5px;
   text-indent: 10px;
@@ -192,7 +200,7 @@ body {
 
 #addProjectForm .submitNewProject {
   grid-area: submit;
-  background-color: #9FC26E;
+  background-color: var(--greenColor);
 }
 
 #addProjectForm .cancelNewProject {
@@ -257,6 +265,7 @@ body {
 }
 
 .ToDoItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -309,7 +318,7 @@ body {
 #saveButton {
   border: none;
   border-radius: 5px;
-  background-color: #9FC26E;
+  background-color: var(--greenColor);
   color: white;
   transition: 0.3s;
   margin-top: 20px;
@@ -335,7 +344,7 @@ body {
   -webkit-transform: scale(1.3); /* Safari and Chrome */
   -o-transform: scale(1.3); /* Opera */
   transform: scale(1.3);
-  accent-color: var(--mainColor);
+  accent-color: var(--greenColor);
 }
 
 .toDoCheckbox:hover {
@@ -358,13 +367,12 @@ body {
   justify-content: center;
   align-items: center;
   background-color: rgb(0, 0, 0, 0.5);
-  transition: 0.2s;
 }
 
 .popup {
   border-radius: 10px;
   background-color: white;
-  padding: 20px;
+  padding: 30px;
 }
 
 .popupContainer {
@@ -393,6 +401,7 @@ body {
 .showPopup {
   opacity: 1;
   z-index: 1;
+  transition: 0.2s;
 }
 
 label {
@@ -402,4 +411,52 @@ label {
 .popup p {
   margin: 0;
   color: rgba(165, 165, 165)
+}
+
+.warningUniqueName {
+  color: red;
+}
+
+.hideWarning {
+  display: none !important;
+}
+
+.toDoNotes {
+  color: white;
+  background-color: black;
+  padding: 10px;
+  border-radius: 10px;
+  position: absolute;
+  top: 35px;
+  z-index: 2;
+  display: none;
+}
+
+.makeVisibleToDoNotes {
+  display: block;
+}
+
+.popup input,
+.popup textarea,
+select {
+  font-family: var(--mainFont);
+  font-size: 1rem;
+  line-height: 1.8rem;
+  background-color: #eee;
+  border: 0;
+  border-radius: 5px;
+  text-indent: 10px;
+}
+
+.popup input:focus,
+.popup textarea:focus,
+select:focus {
+  outline: none;
+  color: white;
+  background-color: var(--greenColor);
+  transition: 0.5s;
+}
+
+select {
+  padding: 5px;
 }

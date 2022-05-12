@@ -76,8 +76,39 @@ const projectsManager = (function() {
     return index;
   }
 
-  function createToDo(title, notes, date, important) {
-    const newToDo = new toDo(toDoIdCounter, activeProjectId, title, notes, date, important);
+  function getProjectIdbyName(name) {
+    let projectId;
+    projectList.forEach(project => {
+      if (project.name === name) projectId = project.projectId;
+    })
+    return projectId;
+  }
+
+  function getProjectNameById(id) {
+    let projectName;
+    projectList.forEach(project => {
+      if (project.projectId === id) {
+        projectName = project.name;
+      }
+    })
+    return projectName;
+  }
+
+  function editToDo(title, notes, dateToSave, projectName, important, editToDoId) {
+    toDoList.forEach(toDo => {
+      if (toDo.toDoId === editToDoId) {
+        toDo.title = title;
+        toDo.notes = notes;
+        toDo.date = dateToSave;
+        toDo.projectId = getProjectIdbyName(projectName);
+        toDo.important = important;
+      }
+    })
+  }
+
+  function createToDo(title, notes, date, projectName, important) {
+    const projectId = getProjectIdbyName(projectName);
+    const newToDo = new toDo(toDoIdCounter, projectId, title, notes, date, important);
     toDoIdCounter++;
     toDoList.push(newToDo);
   }
@@ -93,10 +124,10 @@ const projectsManager = (function() {
   createProject('Inbox');
   createProject('Project1');
   createProject('Project2');
-  createToDo('Text of note 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2009', false);
-  createToDo('Text of note 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2009', true);
+  createToDo('Text of note 1','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2022', 'Inbox', false);
+  createToDo('Text of note 2','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.', '28-01-2022', 'Inbox', true);
 
-  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getActiveProjectId, setActiveProjectId, getActiveTitle, getToDoNumberInList};
+  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getActiveProjectId, setActiveProjectId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo};
 
 })();
 
@@ -113,9 +144,24 @@ const domManipulation = (function() {
   const title = document.querySelector('#title');
   const toDoField = document.querySelector('#toDoField');
   let sidebarShow = true;
-  let filterMode = false;
   const addToDoBtn = document.querySelector('#newToDo');
+  const warningUniqueName = document.querySelector('.warningUniqueName');
+  let editMode = {
+    enabled: false,
+    editToDoId: null
+  };
+  
+
+  // PopupForm
   const popupFill = document.querySelector('.popupFill');
+
+  const addToDoTitle = document.querySelector('#addToDoTitle');
+  const description = document.querySelector('#description');
+  const dueDate = document.querySelector('#dueDate');
+  const selectProjectInForm = document.querySelector('#selectProject');
+  const isImportant = document.querySelector('#isImportant');
+
+  const saveButton = document.querySelector('#saveButton');
 
   function hideShowSidebar() {
     if (sidebarShow) {
@@ -135,16 +181,30 @@ const domManipulation = (function() {
     addProjectInput.value = '';
   }
 
+  function checkUniqueName(name) {
+    let nameIsUnique = true;
+    projectsManager.projectList.forEach(project => {
+      if (project.name === name) nameIsUnique = false;
+    })
+    return nameIsUnique;
+  }
+
   function addProject(event) {
     event.preventDefault();
     const action = event.submitter.classList[0];
     if (action === 'submitNewProject') {
-      addProjectForm.classList.add('hidden');
       const name = addProjectInput.value.charAt(0).toUpperCase() + addProjectInput.value.slice(1).toLowerCase();
-      projectsManager.createProject(name);
-      renderProjects();
+      if (checkUniqueName(name)) {
+        projectsManager.createProject(name);
+        renderProjects();
+        addProjectForm.classList.add('hidden');
+        warningUniqueName.classList.add('hideWarning');
+      } else {
+        warningUniqueName.classList.remove('hideWarning');
+      }
     } else if (action === 'cancelNewProject') {
       addProjectForm.classList.add('hidden');
+      warningUniqueName.classList.add('hideWarning');
     }
   }
 
@@ -234,15 +294,67 @@ const domManipulation = (function() {
   const allFilters = document.querySelectorAll('.filter');
   allFilters.forEach(filter => filter.addEventListener('click', selectFilter));
 
-  function showForm() {
-    popupFill.classList.remove('hidePopup');
-    popupFill.classList.add('showPopup');
+  function addSelectProjectToForm() {
+    selectProjectInForm.innerHTML = '';
+    projectsManager.projectList.forEach(project => {
+      const newSelector = document.createElement('option');
+      newSelector.textContent = project.name;
+      if (project.projectId === projectsManager.getActiveProjectId()) {
+        newSelector.selected = true;
+      }
+      selectProjectInForm.appendChild(newSelector);
+    })
   }
 
-  function hideForm(event) {
-    if (event.target == popupFill) {
+  function getToDoObject(toDoId) {
+    let toDoObject;
+    projectsManager.toDoList.forEach(toDo => {
+      if (toDo.toDoId === +toDoId) toDoObject = toDo;
+    })
+    return toDoObject;
+  }
+
+  function switchEditMode(toDoId) {
+    if (toDoId) {
+      editMode.enabled = true;
+      editMode.editToDoId = +toDoId;
+    } else {
+      editMode.enabled = false;
+      editMode.editToDoId = null;
+    }
+  }
+
+  function fillFormForEdit(event) {
+    const toDoId = event.path[1].classList[1].split('-')[1];
+    const toDoObject = getToDoObject(toDoId);
+    addToDoTitle.value = toDoObject.title;
+    description.value = toDoObject.notes;
+    dueDate.value = invertDateFormat(toDoObject.date);
+    const projectName = projectsManager.getProjectNameById(toDoObject.projectId);
+    selectProjectInForm.value = projectName;
+    isImportant.checked = toDoObject.important;
+
+    switchEditMode(toDoId);
+  }
+
+  function showForm(event) {
+    addSelectProjectToForm();
+    popupFill.classList.remove('hidePopup');
+    popupFill.classList.add('showPopup');
+    if (event.target === addToDoBtn) {
+      document.querySelector('.popup h2').textContent = 'Add new ToDo:';
+      clearNewToDoForm();
+    } else {
+      document.querySelector('.popup h2').textContent = 'Edit ToDo:';
+      fillFormForEdit(event);
+    }
+  }
+
+  function hideForm(event, onSave) {
+    if (onSave || event.target == popupFill) {
       popupFill.classList.remove('showPopup');
       popupFill.classList.add('hidePopup');
+      switchEditMode();
     }
   }
 
@@ -266,6 +378,19 @@ const domManipulation = (function() {
     renderToDos();
   }
 
+  function makeVisibleToDoNote(event) {
+    const toDoId = event.path[1].classList[1].split('-')[1];
+    const toDoNote = document.querySelector(`div.ToDoItem.id-${toDoId} .toDoNotes`);
+    toDoNote.classList.add('makeVisibleToDoNotes');
+  }
+
+  function makeUnvisibleToDoNote() {
+    const toDoNotes = document.querySelectorAll('.toDoNotes');
+    toDoNotes.forEach(toDoNote => {
+      toDoNote.classList.remove('makeVisibleToDoNotes');
+    })
+  }
+
   function renderToDos(toDoList) {
     title.textContent = projectsManager.getActiveTitle();
     const ActualToDoList = toDoList || projectsManager.toDoList;
@@ -287,6 +412,8 @@ const domManipulation = (function() {
       toDoTitle.classList.add('toDoTitle');
       toDoTitle.textContent = toDo.title;
       if (toDo.ready) {toDoTitle.classList.add('done')};
+      toDoTitle.addEventListener('mouseover', makeVisibleToDoNote);
+      toDoTitle.addEventListener('mouseleave', makeUnvisibleToDoNote);
 
       const toDoDate = document.createElement('div');
       toDoDate.textContent = toDo.date;
@@ -304,11 +431,16 @@ const domManipulation = (function() {
       const editToDoBtn = new Image();
       editToDoBtn.src = editToDoIcon;
       editToDoBtn.classList.add('editToDoBtn');
+      editToDoBtn.addEventListener('click', showForm)
 
       const delToDoBtn = new Image();
       delToDoBtn.src = delToDoIcon;
       delToDoBtn.classList.add('delToDoBtn');
       delToDoBtn.addEventListener('click', delToDo, {once: true});
+
+      const toDoNotes = document.createElement('div');
+      toDoNotes.classList.add('toDoNotes');
+      toDoNotes.textContent = toDo.notes;
 
       ToDoItem.appendChild(checkBox);
       ToDoItem.appendChild(toDoTitle);
@@ -316,9 +448,42 @@ const domManipulation = (function() {
       ToDoItem.appendChild(importantIcon);
       ToDoItem.appendChild(editToDoBtn);
       ToDoItem.appendChild(delToDoBtn);
+      ToDoItem.appendChild(toDoNotes);
 
       toDoField.appendChild(ToDoItem);
     })
+  }
+
+  function clearNewToDoForm() {
+    addToDoTitle.value = '';
+    description.value = '';
+    dueDate.value = '';
+    isImportant.checked = false;
+  }
+
+  function invertDateFormat(date) {
+    const tmpDate = date.split('-');
+    return tmpDate[2] + '-' + tmpDate[1] + '-' + tmpDate[0];
+  }
+
+  function submitNewToDoForm(event) {
+    event.preventDefault();
+
+    const title = addToDoTitle.value;
+    const notes = description.value;
+    const date = dueDate.value;
+    const projectName = selectProjectInForm.value;
+    const important = isImportant.checked;
+    const dateToSave = invertDateFormat(date)
+    if (editMode.enabled) {
+      projectsManager.editToDo(title, notes, dateToSave, projectName, important, editMode.editToDoId);
+      switchEditMode();
+    } else {
+      projectsManager.createToDo(title, notes, dateToSave, projectName, important);
+    }
+    hideForm(undefined, true);
+    renderToDos();
+    clearNewToDoForm();
   }
 
   addProjectForm.addEventListener('submit', addProject);
@@ -326,6 +491,7 @@ const domManipulation = (function() {
   addProjectBtn.addEventListener('click', showAddProjectForm);
   addToDoBtn.addEventListener('click', showForm);
   popupFill.addEventListener('click', hideForm)
+  saveButton.addEventListener('click', submitNewToDoForm);
 
   renderProjects();
   renderToDos();
