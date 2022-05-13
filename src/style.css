@@ -460,3 +460,11 @@ select:focus {
 select {
   padding: 5px;
 }
+
+.hideMe {
+  display: none;
+}
+
+.noTasks {
+  margin: 5px 0 0 30px;
+}

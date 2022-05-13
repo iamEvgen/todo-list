@@ -8,6 +8,8 @@ import starOff from './icons/starOff.png';
 import editToDoIcon from './icons/editToDo.png';
 import delToDoIcon from './icons/delToDo.png';
 
+import { format, differenceInDays } from 'date-fns'
+
 
 class toDo {
   constructor(toDoId, projectId, title, notes, date, important) {
@@ -32,16 +34,16 @@ class project {
 const projectsManager = (function() {
   let projectIdCounter = 0;
   let toDoIdCounter = 0;
-  let activeProjectId = 0;
+  let projectOrFilterId = 0; // -1: All tasks, -2: Today, -3: Week, -4: Favoutites, 0, 1, 2... ProjectIDs
   const projectList = [];
   const toDoList = [];
 
-  function getActiveProjectId() {
-    return activeProjectId;
+  function getProjectOrFilterId() {
+    return projectOrFilterId;
   }
 
-  function setActiveProjectId(id) {
-    activeProjectId = +id;
+  function setProjectOrFilterId(id) {
+    projectOrFilterId = +id;
   }
 
   function getActiveTitle() {
@@ -57,7 +59,6 @@ const projectsManager = (function() {
   function moveToDosToInbox(projectId) {
     toDoList.forEach(toDo => {
       if (toDo.projectId === +projectId) {
-        console.log(1);
         toDo.projectId = 0;
       }
     })
@@ -69,8 +70,8 @@ const projectsManager = (function() {
       if (+projectId === item.projectId) {
         object.splice(index, 1);
         moveToDosToInbox(projectId);
-        if (item.projectId === projectsManager.getActiveProjectId()) {
-          projectsManager.setActiveProjectId(0);
+        if (item.projectId === projectsManager.getProjectOrFilterId()) {
+          projectsManager.setProjectOrFilterId(0);
           needToRenderToDos = true;
         }
       }
@@ -134,14 +135,14 @@ const projectsManager = (function() {
   createProject('Inbox');
   createProject('Project1');
   createProject('Project2');
-  createToDo('Text of note 1','Some descripton 1', '13-05-2022', 'Inbox', false);
+  createToDo('Text of note 1','Some descripton 1', '12-05-2022', 'Inbox', false);
   createToDo('Text of note 2','Some descripton 2', '13-05-2022', 'Inbox', true);
   createToDo('Text of note 3','Some descripton 3', '13-05-2022', 'Project1', false);
   createToDo('Text of note 4','Some descripton 4', '15-05-2022', 'Project1', true);
   createToDo('Text of note 5','Some descripton 5', '16-05-2022', 'Project2', false);
   createToDo('Text of note 6','Some descripton 6', '17-05-2022', 'Project2', false);
 
-  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getActiveProjectId, setActiveProjectId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo};
+  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getProjectOrFilterId, setProjectOrFilterId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo};
 
 })();
 
@@ -162,7 +163,7 @@ const domManipulation = (function() {
     editToDoId: null
   };
 
-  // AddNewProjectForm
+  // NewProjectForm
   const cancelNewProject = document.querySelector('.cancelNewProject');
   const addProjectBtn = document.querySelector('.addProjectBtn');
   const addProjectForm = document.querySelector('#addProjectForm');
@@ -254,14 +255,14 @@ const domManipulation = (function() {
   function selectProject() {
     const projectId = this.classList[1].split('-')[1];
     colorActiveProject(projectId);
-    projectsManager.setActiveProjectId(projectId);
+    projectsManager.setProjectOrFilterId(projectId);
     renderToDos();
   }
 
   function selectFilter() {
     const filterId = this.classList[2].split('-')[1];
     colorActiveFilter(filterId);
-    projectsManager.setActiveProjectId(-1 * filterId);
+    projectsManager.setProjectOrFilterId(-1 * filterId);
     renderToDos();
   }
 
@@ -302,8 +303,8 @@ const domManipulation = (function() {
       projectItem.addEventListener('click', selectProject);
     })
 
-    const activeProjectId = projectsManager.getActiveProjectId();
-    colorActiveProject(activeProjectId); 
+    const projectOrFilterId = projectsManager.getProjectOrFilterId();
+    colorActiveProject(projectOrFilterId); 
   }
 
   const allFilters = document.querySelectorAll('.filter');
@@ -314,7 +315,7 @@ const domManipulation = (function() {
     projectsManager.projectList.forEach(project => {
       const newSelector = document.createElement('option');
       newSelector.textContent = project.name;
-      if (project.projectId === projectsManager.getActiveProjectId()) {
+      if (project.projectId === projectsManager.getProjectOrFilterId()) {
         newSelector.selected = true;
       }
       selectProjectInForm.appendChild(newSelector);
@@ -336,6 +337,14 @@ const domManipulation = (function() {
     } else {
       editMode.enabled = false;
       editMode.editToDoId = null;
+    }
+  }
+
+  function showHideAddToDoBtn() {
+    if ([-2, -3, -4].includes(projectsManager.getProjectOrFilterId())) {
+      addToDoBtn.classList.add('hideMe');
+    } else {
+      addToDoBtn.classList.remove('hideMe');
     }
   }
 
@@ -408,17 +417,33 @@ const domManipulation = (function() {
 
   function prepareToDoListForRender() {
     let ActualToDoList;
-    if (projectsManager.getActiveProjectId() === -1) {
+    const filter = projectsManager.getProjectOrFilterId();
+    if (filter === -1) {
       ActualToDoList = projectsManager.toDoList;
+    } else if (filter === -2) {
+      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.date === format(new Date(),'dd-MM-yyyy'));
+    } else if (filter === -3) {
+      ActualToDoList = projectsManager.toDoList.filter(toDo => {
+        const toDoDateFormat = new Date(invertDateFormat(toDo.date));
+        const difference = differenceInDays(toDoDateFormat, new Date());
+        return difference >= 0 && difference <= 7;
+      }) 
+    } else if (filter === -4) {
+      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.important);
+    } else if (filter >= 0) {
+      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.projectId === filter);
     }
     return ActualToDoList;
   }
 
-  function renderToDos(toDoList) {
+  function renderToDos() {
     h1Title.textContent = projectsManager.getActiveTitle();
-    const ActualToDoList = toDoList || projectsManager.toDoList;
+    const ActualToDoList = prepareToDoListForRender();
 
-    toDoField.innerHTML = '';
+    
+    if (ActualToDoList.length === 0) {
+      toDoField.innerHTML = '<p class="noTasks">No Tasks!</p>';
+    } else toDoField.innerHTML = '';
 
     ActualToDoList.forEach(toDo => {
       const ToDoItem = document.createElement('div');
@@ -475,6 +500,8 @@ const domManipulation = (function() {
 
       toDoField.appendChild(ToDoItem);
     })
+
+    showHideAddToDoBtn();
   }
 
   function clearNewToDoForm() {
@@ -509,17 +536,23 @@ const domManipulation = (function() {
     clearNewToDoForm();
   }
 
+  function goToInbox() {
+    projectsManager.setProjectOrFilterId(0);
+    renderProjects();
+    renderToDos();
+  }
+
   addProjectBtn.addEventListener('click', showAddProjectForm);
   addProjectForm.addEventListener('submit', addProject);
   cancelNewProject.addEventListener('click', hideNewProjectForm);
-
-  menuBtn.addEventListener('click', hideShowSidebar);
 
   addToDoBtn.addEventListener('click', showForm);
   popupForm.addEventListener('submit', submitNewToDoForm);
   popupFill.addEventListener('click', hideForm)
 
-  renderProjects();
-  renderToDos();
+  menuBtn.addEventListener('click', hideShowSidebar);
+  homeBtn.addEventListener('click', goToInbox);
+
+  goToInbox();
   
 })();
