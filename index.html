@@ -5,6 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Perfect Todo list</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
   <div class="container">
@@ -16,19 +17,19 @@
     </div>
     <div class="sidebar">
       <div class="sidebarMenu">
-        <div class="nav filter id-0">
+        <div class="nav filter id-1">
           <img src="../src/icons/alltasks.png" alt="alltasks icon">
           <div>All tasks</div>
         </div>
-        <div class="nav filter id-1">
+        <div class="nav filter id-2">
           <img src="../src/icons/today.png" alt="alltasks icon">
           <div>Today</div>
         </div>
-        <div class="nav filter id-2">
+        <div class="nav filter id-3">
           <img src="../src/icons/week.png" alt="alltasks icon">
           <div>Week</div>
         </div>
-        <div class="nav filter id-3">
+        <div class="nav filter id-4">
           <img src="../src/icons/important.png" alt="alltasks icon">
           <div>Favourites</div>
         </div>
@@ -44,7 +45,7 @@
               <div class="warningUniqueName hideWarning">* need unique name</div>
             </div>
             <button class="submitNewProject">Submit</button>
-            <button class="cancelNewProject">Cancel</button>
+            <button type="button" class="cancelNewProject">Cancel</button>
           </form>
           <div class="projectsList">
             <div class="inbox">Inbox</div>
@@ -54,7 +55,7 @@
     </div>
     <div class="content">
       <div class="contentBox">
-        <h1 id="title"></h1>
+        <h1 id="h1Title"></h1>
         <div id="toDoField"></div>
         <button id="newToDo">+ ToDo</button>
       </div>
@@ -73,9 +74,9 @@
       <div class="popupContainer">
         <div class="leftPart">
           <label for="addToDoTitle">Title:</label>
-          <input id="addToDoTitle" type="text" maxlength="300" required>
+          <input id="addToDoTitle" type="text" maxlength="300" minlength="4" required>
           <label for="description">Description:</label>
-          <textarea name="description" id="description" cols="30" rows="5"></textarea> 
+          <textarea name="description" id="description" cols="30" rows="5" minlength="4" required></textarea> 
         </div>
         <div class="rightPart">
           <label for="dueDate">Due date:</label>
