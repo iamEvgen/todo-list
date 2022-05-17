@@ -52,6 +52,8 @@ const projectsManager = (function() {
   function updateLocalStorage() {
     localStorage.setItem('projectList', JSON.stringify(projectList));
     localStorage.setItem('toDoList', JSON.stringify(toDoList));
+    localStorage.setItem('projectIdCounter', projectIdCounter);
+    localStorage.setItem('toDoIdCounter', toDoIdCounter);
   }
 
   function getDataFromLocalStorage()  {
@@ -62,6 +64,9 @@ const projectsManager = (function() {
     const toDoListUpdated = JSON.parse(localStorage.getItem('toDoList'));
     while (toDoList.length) toDoList.pop();
     for (let item of toDoListUpdated) toDoList.push(item);
+
+    projectIdCounter = +localStorage.getItem('projectIdCounter');
+    toDoIdCounter = +localStorage.getItem('toDoIdCounter');
   }
 
   function setProjectOrFilterId(id) {
