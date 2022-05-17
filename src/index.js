@@ -285,7 +285,7 @@ const domManipulation = (function() {
   }
 
   function delProject(event) {
-    const id = event.path[1].classList[1].split('-')[1];
+    const id = event.composedPath()[1].classList[1].split('-')[1];
     const needToRenderToDos = projectsManager.deleteProject(id);
     renderProjects();
     if (needToRenderToDos) renderToDos();
@@ -409,7 +409,7 @@ const domManipulation = (function() {
   }
 
   function fillFormForEdit(event) {
-    const toDoId = event.path[1].classList[1].split('-')[1];
+    const toDoId = event.composedPath()[1].classList[1].split('-')[1];
     const toDoObject = getToDoObject(toDoId);
     addToDoTitle.value = toDoObject.title;
     description.value = toDoObject.notes;
@@ -443,27 +443,27 @@ const domManipulation = (function() {
   }
 
   function changeImportant(event) {
-    const toDoId = +event.path[1].classList[1].split('-')[1];
+    const toDoId = +event.composedPath()[1].classList[1].split('-')[1];
     const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
     projectsManager.toDoList[toDoNumber].important = !projectsManager.toDoList[toDoNumber].important;
     renderToDos();
   }
 
   function changeReady(event) {
-    const toDoId = +event.path[1].classList[1].split('-')[1];
+    const toDoId = +event.composedPath()[1].classList[1].split('-')[1];
     const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
     projectsManager.toDoList[toDoNumber].ready = !projectsManager.toDoList[toDoNumber].ready;
     renderToDos();
   }
 
   function delToDo(event) {
-    const toDoId = +event.path[1].classList[1].split('-')[1];
+    const toDoId = +event.composedPath()[1].classList[1].split('-')[1];
     projectsManager.deleteToDo(toDoId);
     renderToDos();
   }
 
   function makeVisibleToDoNote(event) {
-    const toDoId = event.path[1].classList[1].split('-')[1];
+    const toDoId = event.composedPath()[1].classList[1].split('-')[1];
     const toDoNote = document.querySelector(`div.ToDoItem.id-${toDoId} .toDoNotes`);
     toDoNote.classList.add('makeVisibleToDoNotes');
   }
