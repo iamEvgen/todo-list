@@ -8,6 +8,7 @@ import './icons/alltasks.png';
 import './icons/today.png';
 import './icons/week.png';
 import './icons/projects.png';
+import './icons/refresh.png';
 import closeBtn from './icons/del.png';
 import starOn from './icons/starOn.png';
 import starOff from './icons/starOff.png';
@@ -48,6 +49,21 @@ const projectsManager = (function() {
     return projectOrFilterId;
   }
 
+  function updateLocalStorage() {
+    localStorage.setItem('projectList', JSON.stringify(projectList));
+    localStorage.setItem('toDoList', JSON.stringify(toDoList));
+  }
+
+  function getDataFromLocalStorage()  {
+    const projectListUpdated = JSON.parse(localStorage.getItem('projectList'));
+    while (projectList.length) projectList.pop();
+    for (let item of projectListUpdated) projectList.push(item);
+
+    const toDoListUpdated = JSON.parse(localStorage.getItem('toDoList'));
+    while (toDoList.length) toDoList.pop();
+    for (let item of toDoListUpdated) toDoList.push(item);
+  }
+
   function setProjectOrFilterId(id) {
     projectOrFilterId = +id;
   }
@@ -56,10 +72,11 @@ const projectsManager = (function() {
     return document.querySelector('.active').textContent;
   }
 
-  function createProject(name) {
+  function createProject(name, dontSave) {
     const newProject = new project(projectIdCounter, name);
     projectIdCounter++;
     projectList.push(newProject);
+    if (!dontSave) updateLocalStorage();
   }
 
   function moveToDosToInbox(projectId) {
@@ -68,6 +85,7 @@ const projectsManager = (function() {
         toDo.projectId = 0;
       }
     })
+    updateLocalStorage();
   }
 
   function deleteProject(projectId) {
@@ -82,6 +100,7 @@ const projectsManager = (function() {
         }
       }
     })
+    updateLocalStorage();
     return needToRenderToDos;
   }
 
@@ -111,6 +130,23 @@ const projectsManager = (function() {
     return projectName;
   }
 
+  function createToDo(title, notes, date, projectName, important) {
+    const projectId = getProjectIdbyName(projectName);
+    const newToDo = new toDo(toDoIdCounter, projectId, title, notes, date, important);
+    toDoIdCounter++;
+    toDoList.push(newToDo);
+    updateLocalStorage();
+  }
+
+  function deleteToDo(toDoId) {
+    toDoList.forEach(function(toDo, index, object) {
+      if (toDo.toDoId === toDoId) {
+        object.splice(index, 1);
+      }
+    })
+    updateLocalStorage();
+  }
+
   function editToDo(title, notes, dateToSave, projectName, important, editToDoId) {
     toDoList.forEach(toDo => {
       if (toDo.toDoId === editToDoId) {
@@ -121,34 +157,51 @@ const projectsManager = (function() {
         toDo.important = important;
       }
     })
+    updateLocalStorage();
   }
 
-  function createToDo(title, notes, date, projectName, important) {
-    const projectId = getProjectIdbyName(projectName);
-    const newToDo = new toDo(toDoIdCounter, projectId, title, notes, date, important);
-    toDoIdCounter++;
-    toDoList.push(newToDo);
+  function localStorageAvailable() {
+    try {
+      localStorage.setItem('a', 'b');
+      localStorage.removeItem('a');
+      return true;
+    }
+    catch(e) {
+      return false;
+    }
   }
 
-  function deleteToDo(toDoId) {
-    toDoList.forEach(function(toDo, index, object) {
-      if (toDo.toDoId === toDoId) {
-        object.splice(index, 1);
-      }
-    })
+  function clearProjectList() {
+    projectList.splice(1, projectList.length - 1);
   }
 
-  createProject('Inbox');
-  createProject('Project1');
-  createProject('Project2');
-  createToDo('Text of note 1','Some descripton 1', '12-05-2022', 'Inbox', false);
-  createToDo('Text of note 2','Some descripton 2', '13-05-2022', 'Inbox', true);
-  createToDo('Text of note 3','Some descripton 3', '13-05-2022', 'Project1', false);
-  createToDo('Text of note 4','Some descripton 4', '15-05-2022', 'Project1', true);
-  createToDo('Text of note 5','Some descripton 5', '16-05-2022', 'Project2', false);
-  createToDo('Text of note 6','Some descripton 6', '17-05-2022', 'Project2', false);
+  function enterDataForExample() {
+    localStorage.clear();
+    while (toDoList.length) toDoList.pop();
+    clearProjectList();
+    createProject('Project1');
+    createProject('Project2');
+    createToDo('Text of note 1','Some descripton 1', '12-05-2022', 'Inbox', false);
+    createToDo('Text of note 2','Some descripton 2', '13-05-2022', 'Inbox', true);
+    createToDo('Text of note 3','Some descripton 3', '13-05-2022', 'Project1', false);
+    createToDo('Text of note 4','Some descripton 4', '15-05-2022', 'Project1', true);
+    createToDo('Text of note 5','Some descripton 5', '16-05-2022', 'Project2', false);
+    createToDo('Text of note 6','Some descripton 6', '17-05-2022', 'Project2', false);
+    updateLocalStorage();
+  }
 
-  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getProjectOrFilterId, setProjectOrFilterId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo};
+  function onPageReload() {
+    if (!localStorageAvailable() || !localStorage.getItem('projectList')) {
+      enterDataForExample();
+    } else {
+      getDataFromLocalStorage();
+    }
+  }
+
+  createProject('Inbox', true);
+  onPageReload();
+
+  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getProjectOrFilterId, setProjectOrFilterId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo, enterDataForExample};
 
 })();
 
@@ -158,6 +211,7 @@ const domManipulation = (function() {
   const content = document.querySelector('.content');
   const menuBtn = document.querySelector('.menu');
   const homeBtn = document.querySelector('.home');
+  const refreshBtn = document.querySelector('.refresh');
   const projectsList = document.querySelector('.projectsList');
   const h1Title = document.querySelector('#h1Title');
   const toDoField = document.querySelector('#toDoField');
@@ -558,6 +612,11 @@ const domManipulation = (function() {
 
   menuBtn.addEventListener('click', hideShowSidebar);
   homeBtn.addEventListener('click', goToInbox);
+  refreshBtn.addEventListener('click', () => {
+    projectsManager.enterDataForExample();
+    renderProjects();
+    renderToDos();
+  });
 
   goToInbox();
   
