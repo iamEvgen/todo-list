@@ -1,6 +1,7 @@
 import './style.css';
 import './img/menu.png';
 import './img/home.png';
+import './img/refresh.png';
 import './img/GitHub.png';
 import './icons/add.png';
 import './icons/important.png';
@@ -8,7 +9,6 @@ import './icons/alltasks.png';
 import './icons/today.png';
 import './icons/week.png';
 import './icons/projects.png';
-import './icons/refresh.png';
 import closeBtn from './icons/del.png';
 import starOn from './icons/starOn.png';
 import starOff from './icons/starOff.png';
