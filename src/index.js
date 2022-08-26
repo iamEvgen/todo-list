@@ -15,30 +15,26 @@ import starOff from './icons/starOff.png';
 import editToDoIcon from './icons/editToDo.png';
 import delToDoIcon from './icons/delToDo.png';
 
-import { format, differenceInDays } from 'date-fns'
+import { format, differenceInDays } from 'date-fns';
 
-
-class toDo {
+class ToDo {
   constructor(toDoId, projectId, title, notes, date, important) {
-    this.toDoId = toDoId,
-    this.projectId = projectId;
-    this.title = title,
-    this.notes = notes,
-    this.date = date,
-    this.important = important,
-    this.ready = false
+    (this.toDoId = toDoId), (this.projectId = projectId);
+    (this.title = title),
+      (this.notes = notes),
+      (this.date = date),
+      (this.important = important),
+      (this.ready = false);
   }
 }
 
-class project {
+class Project {
   constructor(projectId, name) {
-    this.projectId = projectId,
-    this.name = name
+    (this.projectId = projectId), (this.name = name);
   }
 }
 
-
-const projectsManager = (function() {
+const projectsManager = (function () {
   let projectIdCounter = 0;
   let toDoIdCounter = 0;
   let projectOrFilterId = 0; // -1: All tasks, -2: Today, -3: Week, -4: Favoutites, 0, 1, 2... ProjectIDs
@@ -56,7 +52,7 @@ const projectsManager = (function() {
     localStorage.setItem('toDoIdCounter', toDoIdCounter);
   }
 
-  function getDataFromLocalStorage()  {
+  function getDataFromLocalStorage() {
     const projectListUpdated = JSON.parse(localStorage.getItem('projectList'));
     while (projectList.length) projectList.pop();
     for (let item of projectListUpdated) projectList.push(item);
@@ -77,25 +73,48 @@ const projectsManager = (function() {
     return document.querySelector('.active').textContent;
   }
 
+  function checkUniqId(id, isIdToDo) {
+    let result = true;
+    if (isIdToDo) {
+      toDoList.forEach((toDo) => {
+        if (toDo.toDoId === id) {
+          result = false;
+        }
+      });
+    } else {
+      projectList.forEach((project) => {
+        if (project.projectId === id) {
+          result = false;
+        }
+      });
+    }
+    return result;
+  }
+
   function createProject(name, dontSave) {
-    const newProject = new project(projectIdCounter, name);
-    projectIdCounter++;
+    const newProject = new Project(projectIdCounter, name);
     projectList.push(newProject);
+    for (let i = 0; i < 100, i++; ) {
+      projectIdCounter += 1;
+      if (checkUniqId(projectIdCounter, false)) {
+        break;
+      }
+    }
     if (!dontSave) updateLocalStorage();
   }
 
   function moveToDosToInbox(projectId) {
-    toDoList.forEach(toDo => {
+    toDoList.forEach((toDo) => {
       if (toDo.projectId === +projectId) {
         toDo.projectId = 0;
       }
-    })
+    });
     updateLocalStorage();
   }
 
   function deleteProject(projectId) {
     let needToRenderToDos = false;
-    projectList.forEach(function(item, index, object) {
+    projectList.forEach(function (item, index, object) {
       if (+projectId === item.projectId) {
         object.splice(index, 1);
         moveToDosToInbox(projectId);
@@ -104,56 +123,75 @@ const projectsManager = (function() {
           needToRenderToDos = true;
         }
       }
-    })
+    });
     updateLocalStorage();
     return needToRenderToDos;
   }
 
   function getToDoNumberInList(id) {
     let index = -1;
-    toDoList.forEach(function(toDo, i) {
+    toDoList.forEach(function (toDo, i) {
       if (toDo.toDoId === +id) index = i;
-    })
+    });
     return index;
   }
 
   function getProjectIdbyName(name) {
     let projectId;
-    projectList.forEach(project => {
+    projectList.forEach((project) => {
       if (project.name === name) projectId = project.projectId;
-    })
+    });
     return projectId;
   }
 
   function getProjectNameById(id) {
     let projectName;
-    projectList.forEach(project => {
+    projectList.forEach((project) => {
       if (project.projectId === id) {
         projectName = project.name;
       }
-    })
+    });
     return projectName;
   }
 
   function createToDo(title, notes, date, projectName, important) {
     const projectId = getProjectIdbyName(projectName);
-    const newToDo = new toDo(toDoIdCounter, projectId, title, notes, date, important);
-    toDoIdCounter++;
+    const newToDo = new ToDo(
+      toDoIdCounter,
+      projectId,
+      title,
+      notes,
+      date,
+      important
+    );
     toDoList.push(newToDo);
+    for (let i = 0; i < 100, i++; ) {
+      toDoIdCounter += 1;
+      if (checkUniqId(toDoIdCounter, true)) {
+        break;
+      }
+    }
     updateLocalStorage();
   }
 
   function deleteToDo(toDoId) {
-    toDoList.forEach(function(toDo, index, object) {
+    toDoList.forEach(function (toDo, index, object) {
       if (toDo.toDoId === toDoId) {
         object.splice(index, 1);
       }
-    })
+    });
     updateLocalStorage();
   }
 
-  function editToDo(title, notes, dateToSave, projectName, important, editToDoId) {
-    toDoList.forEach(toDo => {
+  function editToDo(
+    title,
+    notes,
+    dateToSave,
+    projectName,
+    important,
+    editToDoId
+  ) {
+    toDoList.forEach((toDo) => {
       if (toDo.toDoId === editToDoId) {
         toDo.title = title;
         toDo.notes = notes;
@@ -161,7 +199,7 @@ const projectsManager = (function() {
         toDo.projectId = getProjectIdbyName(projectName);
         toDo.important = important;
       }
-    })
+    });
     updateLocalStorage();
   }
 
@@ -170,8 +208,7 @@ const projectsManager = (function() {
       localStorage.setItem('a', 'b');
       localStorage.removeItem('a');
       return true;
-    }
-    catch(e) {
+    } catch (e) {
       return false;
     }
   }
@@ -186,12 +223,48 @@ const projectsManager = (function() {
     clearProjectList();
     createProject('Project1');
     createProject('Project2');
-    createToDo('Text of note 1','Some descripton 1', '12-05-2022', 'Inbox', false);
-    createToDo('Text of note 2','Some descripton 2', '13-05-2022', 'Inbox', true);
-    createToDo('Text of note 3','Some descripton 3', '13-05-2022', 'Project1', false);
-    createToDo('Text of note 4','Some descripton 4', '15-05-2022', 'Project1', true);
-    createToDo('Text of note 5','Some descripton 5', '16-05-2022', 'Project2', false);
-    createToDo('Text of note 6','Some descripton 6', '17-05-2022', 'Project2', false);
+    createToDo(
+      'Text of note 1',
+      'Some descripton 1',
+      '12-05-2022',
+      'Inbox',
+      false
+    );
+    createToDo(
+      'Text of note 2',
+      'Some descripton 2',
+      '13-05-2022',
+      'Inbox',
+      true
+    );
+    createToDo(
+      'Text of note 3',
+      'Some descripton 3',
+      '13-05-2022',
+      'Project1',
+      false
+    );
+    createToDo(
+      'Text of note 4',
+      'Some descripton 4',
+      '15-05-2022',
+      'Project1',
+      true
+    );
+    createToDo(
+      'Text of note 5',
+      'Some descripton 5',
+      '16-05-2022',
+      'Project2',
+      false
+    );
+    createToDo(
+      'Text of note 6',
+      'Some descripton 6',
+      '17-05-2022',
+      'Project2',
+      false
+    );
     updateLocalStorage();
   }
 
@@ -206,12 +279,24 @@ const projectsManager = (function() {
   createProject('Inbox', true);
   onPageReload();
 
-  return {projectList, toDoList, createProject, deleteProject, createToDo, deleteToDo, getProjectOrFilterId, setProjectOrFilterId, getActiveTitle, getToDoNumberInList, getProjectNameById, editToDo, enterDataForExample};
-
+  return {
+    projectList,
+    toDoList,
+    createProject,
+    deleteProject,
+    createToDo,
+    deleteToDo,
+    getProjectOrFilterId,
+    setProjectOrFilterId,
+    getActiveTitle,
+    getToDoNumberInList,
+    getProjectNameById,
+    editToDo,
+    enterDataForExample,
+  };
 })();
 
-
-const domManipulation = (function() {
+const domManipulation = (function () {
   const sidebar = document.querySelector('.sidebar');
   const content = document.querySelector('.content');
   const menuBtn = document.querySelector('.menu');
@@ -225,7 +310,7 @@ const domManipulation = (function() {
   const warningUniqueName = document.querySelector('.warningUniqueName');
   let editMode = {
     enabled: false,
-    editToDoId: null
+    editToDoId: null,
   };
 
   // NewProjectForm
@@ -265,9 +350,9 @@ const domManipulation = (function() {
   function checkUniqueName(name) {
     let nameIsUnique = true;
     if (name.length < 1) nameIsUnique = false;
-    projectsManager.projectList.forEach(project => {
+    projectsManager.projectList.forEach((project) => {
       if (project.name === name) nameIsUnique = false;
-    })
+    });
     return nameIsUnique;
   }
 
@@ -278,7 +363,9 @@ const domManipulation = (function() {
 
   function addProject(event) {
     event.preventDefault();
-    const name = addProjectInput.value.charAt(0).toUpperCase() + addProjectInput.value.slice(1).toLowerCase();
+    const name =
+      addProjectInput.value.charAt(0).toUpperCase() +
+      addProjectInput.value.slice(1).toLowerCase();
     if (checkUniqueName(name)) {
       projectsManager.createProject(name);
       renderProjects();
@@ -299,8 +386,8 @@ const domManipulation = (function() {
   function resetActiveColor() {
     const allProjects = document.querySelectorAll('.projectItem');
     const allFilters = document.querySelectorAll('.filter');
-    allProjects.forEach(project => project.classList.remove('active'));
-    allFilters.forEach(filter => filter.classList.remove('active'));
+    allProjects.forEach((project) => project.classList.remove('active'));
+    allFilters.forEach((filter) => filter.classList.remove('active'));
   }
 
   function colorActiveProject(id) {
@@ -308,7 +395,7 @@ const domManipulation = (function() {
       resetActiveColor();
       const activeProject = document.querySelector(`.projectItem.id-${id}`);
       activeProject.classList.add('active');
-    } 
+    }
   }
 
   function colorActiveFilter(id) {
@@ -334,64 +421,66 @@ const domManipulation = (function() {
   function renderProjects() {
     const projectItems = document.querySelectorAll('.projectItem');
     if (projectItems.length > 0) {
-      projectItems.forEach(projectItem => {
+      projectItems.forEach((projectItem) => {
         projectItem.removeEventListener('click', selectProject);
-      })
+      });
     }
-    
+
     projectsList.innerHTML = '';
-    projectsManager.projectList.forEach(project => {
+    projectsManager.projectList.forEach((project) => {
       const newProject = document.createElement('div');
       const projectName = document.createElement('div');
       newProject.classList.add('projectItem');
       newProject.classList.add(`id-${project.projectId}`);
       projectName.textContent = project.name;
       newProject.appendChild(projectName);
-      
+
       if (project.projectId !== 0) {
         const delIcon = new Image();
         delIcon.src = closeBtn;
         delIcon.classList.add('delBtn');
         newProject.appendChild(delIcon);
       }
-      
+
       projectsList.appendChild(newProject);
-    })
+    });
 
     const closeBtns = document.querySelectorAll('.delBtn');
-    closeBtns.forEach(closeBtn => {
-      closeBtn.addEventListener('click', delProject, {once: true});
-    })
+    closeBtns.forEach((closeBtn) => {
+      closeBtn.addEventListener('click', delProject, { once: true });
+    });
 
     const projectItemsUpdated = document.querySelectorAll('.projectItem');
-    projectItemsUpdated.forEach(projectItem => {
+    projectItemsUpdated.forEach((projectItem) => {
       projectItem.addEventListener('click', selectProject);
-    })
+    });
 
     const projectOrFilterId = projectsManager.getProjectOrFilterId();
-    colorActiveProject(projectOrFilterId); 
+    colorActiveProject(projectOrFilterId);
   }
 
   const allFilters = document.querySelectorAll('.filter');
-  allFilters.forEach(filter => filter.addEventListener('click', selectFilter));
+  allFilters.forEach((filter) =>
+    filter.addEventListener('click', selectFilter)
+  );
 
   function addSelectProjectToForm() {
     selectProjectInForm.innerHTML = '';
-    projectsManager.projectList.forEach(project => {
+    projectsManager.projectList.forEach((project) => {
       const newSelector = document.createElement('option');
       newSelector.textContent = project.name;
       if (project.projectId === projectsManager.getProjectOrFilterId()) {
         newSelector.selected = true;
       }
       selectProjectInForm.appendChild(newSelector);
-    })
+    });
   }
 
   function getToDoObject(toDoId) {
     let toDoObject;
-    projectsManager.toDoList.forEach(toDo => {
+    projectsManager.toDoList.forEach((toDo) => {
       if (toDo.toDoId === +toDoId) toDoObject = toDo;
-    })
+    });
     return toDoObject;
   }
 
@@ -419,7 +508,9 @@ const domManipulation = (function() {
     addToDoTitle.value = toDoObject.title;
     description.value = toDoObject.notes;
     dueDate.value = invertDateFormat(toDoObject.date);
-    const projectName = projectsManager.getProjectNameById(toDoObject.projectId);
+    const projectName = projectsManager.getProjectNameById(
+      toDoObject.projectId
+    );
     selectProjectInForm.value = projectName;
     isImportant.checked = toDoObject.important;
 
@@ -450,14 +541,16 @@ const domManipulation = (function() {
   function changeImportant(event) {
     const toDoId = +event.composedPath()[1].classList[1].split('-')[1];
     const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
-    projectsManager.toDoList[toDoNumber].important = !projectsManager.toDoList[toDoNumber].important;
+    projectsManager.toDoList[toDoNumber].important =
+      !projectsManager.toDoList[toDoNumber].important;
     renderToDos();
   }
 
   function changeReady(event) {
     const toDoId = +event.composedPath()[1].classList[1].split('-')[1];
     const toDoNumber = projectsManager.getToDoNumberInList(toDoId);
-    projectsManager.toDoList[toDoNumber].ready = !projectsManager.toDoList[toDoNumber].ready;
+    projectsManager.toDoList[toDoNumber].ready =
+      !projectsManager.toDoList[toDoNumber].ready;
     renderToDos();
   }
 
@@ -469,15 +562,17 @@ const domManipulation = (function() {
 
   function makeVisibleToDoNote(event) {
     const toDoId = event.composedPath()[1].classList[1].split('-')[1];
-    const toDoNote = document.querySelector(`div.ToDoItem.id-${toDoId} .toDoNotes`);
+    const toDoNote = document.querySelector(
+      `div.ToDoItem.id-${toDoId} .toDoNotes`
+    );
     toDoNote.classList.add('makeVisibleToDoNotes');
   }
 
   function makeUnvisibleToDoNote() {
     const toDoNotes = document.querySelectorAll('.toDoNotes');
-    toDoNotes.forEach(toDoNote => {
+    toDoNotes.forEach((toDoNote) => {
       toDoNote.classList.remove('makeVisibleToDoNotes');
-    })
+    });
   }
 
   function prepareToDoListForRender() {
@@ -486,17 +581,23 @@ const domManipulation = (function() {
     if (filter === -1) {
       ActualToDoList = projectsManager.toDoList;
     } else if (filter === -2) {
-      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.date === format(new Date(),'dd-MM-yyyy'));
+      ActualToDoList = projectsManager.toDoList.filter(
+        (toDo) => toDo.date === format(new Date(), 'dd-MM-yyyy')
+      );
     } else if (filter === -3) {
-      ActualToDoList = projectsManager.toDoList.filter(toDo => {
+      ActualToDoList = projectsManager.toDoList.filter((toDo) => {
         const toDoDateFormat = new Date(invertDateFormat(toDo.date));
         const difference = differenceInDays(toDoDateFormat, new Date());
         return difference >= 0 && difference <= 7;
-      }) 
+      });
     } else if (filter === -4) {
-      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.important);
+      ActualToDoList = projectsManager.toDoList.filter(
+        (toDo) => toDo.important
+      );
     } else if (filter >= 0) {
-      ActualToDoList = projectsManager.toDoList.filter(toDo => toDo.projectId === filter);
+      ActualToDoList = projectsManager.toDoList.filter(
+        (toDo) => toDo.projectId === filter
+      );
     }
     return ActualToDoList;
   }
@@ -505,26 +606,29 @@ const domManipulation = (function() {
     h1Title.textContent = projectsManager.getActiveTitle();
     const ActualToDoList = prepareToDoListForRender();
 
-    
     if (ActualToDoList.length === 0) {
       toDoField.innerHTML = '<p class="noTasks">No Tasks!</p>';
     } else toDoField.innerHTML = '';
 
-    ActualToDoList.forEach(toDo => {
+    ActualToDoList.forEach((toDo) => {
       const ToDoItem = document.createElement('div');
       ToDoItem.classList.add('ToDoItem');
       ToDoItem.classList.add(`id-${toDo.toDoId}`);
 
       const checkBox = document.createElement('input');
-      checkBox.type = "checkbox";
+      checkBox.type = 'checkbox';
       checkBox.classList.add('toDoCheckbox');
-      if (toDo.ready) {checkBox.checked = true};
+      if (toDo.ready) {
+        checkBox.checked = true;
+      }
       checkBox.addEventListener('click', changeReady);
 
       const toDoTitle = document.createElement('div');
       toDoTitle.classList.add('toDoTitle');
       toDoTitle.textContent = toDo.title;
-      if (toDo.ready) {toDoTitle.classList.add('done')};
+      if (toDo.ready) {
+        toDoTitle.classList.add('done');
+      }
       toDoTitle.addEventListener('mouseover', makeVisibleToDoNote);
       toDoTitle.addEventListener('mouseleave', makeUnvisibleToDoNote);
 
@@ -544,12 +648,12 @@ const domManipulation = (function() {
       const editToDoBtn = new Image();
       editToDoBtn.src = editToDoIcon;
       editToDoBtn.classList.add('editToDoBtn');
-      editToDoBtn.addEventListener('click', showForm)
+      editToDoBtn.addEventListener('click', showForm);
 
       const delToDoBtn = new Image();
       delToDoBtn.src = delToDoIcon;
       delToDoBtn.classList.add('delToDoBtn');
-      delToDoBtn.addEventListener('click', delToDo, {once: true});
+      delToDoBtn.addEventListener('click', delToDo, { once: true });
 
       const toDoNotes = document.createElement('div');
       toDoNotes.classList.add('toDoNotes');
@@ -564,7 +668,7 @@ const domManipulation = (function() {
       ToDoItem.appendChild(toDoNotes);
 
       toDoField.appendChild(ToDoItem);
-    })
+    });
 
     showHideAddToDoBtn();
   }
@@ -589,12 +693,25 @@ const domManipulation = (function() {
     const date = dueDate.value;
     const projectName = selectProjectInForm.value;
     const important = isImportant.checked;
-    const dateToSave = invertDateFormat(date)
+    const dateToSave = invertDateFormat(date);
     if (editMode.enabled) {
-      projectsManager.editToDo(title, notes, dateToSave, projectName, important, editMode.editToDoId);
+      projectsManager.editToDo(
+        title,
+        notes,
+        dateToSave,
+        projectName,
+        important,
+        editMode.editToDoId
+      );
       switchEditMode();
     } else {
-      projectsManager.createToDo(title, notes, dateToSave, projectName, important);
+      projectsManager.createToDo(
+        title,
+        notes,
+        dateToSave,
+        projectName,
+        important
+      );
     }
     hideForm(undefined, true);
     renderToDos();
@@ -613,7 +730,7 @@ const domManipulation = (function() {
 
   addToDoBtn.addEventListener('click', showForm);
   popupForm.addEventListener('submit', submitNewToDoForm);
-  popupFill.addEventListener('click', hideForm)
+  popupFill.addEventListener('click', hideForm);
 
   menuBtn.addEventListener('click', hideShowSidebar);
   homeBtn.addEventListener('click', goToInbox);
@@ -624,5 +741,4 @@ const domManipulation = (function() {
   });
 
   goToInbox();
-  
 })();
